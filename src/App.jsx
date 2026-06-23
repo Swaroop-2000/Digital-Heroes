@@ -907,8 +907,8 @@ function App() {
             
             <div className="modal-body" style={{ padding: 0, display: 'flex', flexDirection: 'column' }}>
               <div className="compare-legend">
-                <span style={{ color: 'var(--text-muted)' }}>Original ({formatBytes(compareFile.originalSize)})</span>
-                <span style={{ color: 'var(--accent)' }}>Compressed ({formatBytes(compareFile.compressedSize)})</span>
+                <span className="legend-text original-text">Original ({formatBytes(compareFile.originalSize)})</span>
+                <span className="legend-text compressed-text">Compressed ({formatBytes(compareFile.compressedSize)})</span>
               </div>
               <div className="compare-container">
 
