@@ -80,6 +80,7 @@ function App() {
   const fileInputRef = useRef(null);
   const previewImgRef = useRef(null);
   const draggableCanvasRef = useRef(null);
+  const watermarkBoxRef = useRef({ width: 0, height: 0 });
 
   const formatBytes = (bytes, decimals = 2) => {
     if (!+bytes) return '0 Bytes';
@@ -450,15 +451,20 @@ function App() {
       canvas.style.width = `${logicalWidth}px`;
       canvas.style.height = `${logicalHeight}px`;
       
-      // Enforce physical boundary clamping on the preview canvas
-      const halfW = logicalWidth / 2;
-      const halfH = logicalHeight / 2;
+      // Enforce physical boundary clamping using the EXACT background box size,
+      // NOT the oversized DOM canvas size (which contains invisible padding)
+      const boxW = textWidth + padX * 2;
+      const boxH = boxHeight + padY * 2;
+      watermarkBoxRef.current = { width: boxW, height: boxH };
       
-      const availableW = imgRect.width - (halfW * 2);
-      const availableH = imgRect.height - (halfH * 2);
+      const halfBoxW = boxW / 2;
+      const halfBoxH = boxH / 2;
       
-      const xPx = availableW > 0 ? halfW + (currentWm.x / 100) * availableW : imgRect.width / 2;
-      const yPx = availableH > 0 ? halfH + (currentWm.y / 100) * availableH : imgRect.height / 2;
+      const availableW = imgRect.width - boxW;
+      const availableH = imgRect.height - boxH;
+      
+      const xPx = availableW > 0 ? halfBoxW + (currentWm.x / 100) * availableW : imgRect.width / 2;
+      const yPx = availableH > 0 ? halfBoxH + (currentWm.y / 100) * availableH : imgRect.height / 2;
       
       canvas.style.left = `${(xPx / imgRect.width) * 100}%`;
       canvas.style.top = `${(yPx / imgRect.height) * 100}%`;
@@ -525,13 +531,16 @@ function App() {
       const rect = previewImgRef.current.getBoundingClientRect();
       const mouseX = e.clientX - rect.left;
       const mouseY = e.clientY - rect.top;
-      const textRect = draggableCanvasRef.current.getBoundingClientRect();
-      const halfW = textRect.width / 2;
-      const halfH = textRect.height / 2;
-      const availableW = rect.width - (halfW * 2);
-      const availableH = rect.height - (halfH * 2);
-      const textXPx = availableW > 0 ? halfW + (currentWm.x / 100) * availableW : rect.width / 2;
-      const textYPx = availableH > 0 ? halfH + (currentWm.y / 100) * availableH : rect.height / 2;
+      const boxW = watermarkBoxRef.current.width;
+      const boxH = watermarkBoxRef.current.height;
+      const halfBoxW = boxW / 2;
+      const halfBoxH = boxH / 2;
+      
+      const availableW = rect.width - boxW;
+      const availableH = rect.height - boxH;
+      
+      const textXPx = availableW > 0 ? halfBoxW + (currentWm.x / 100) * availableW : rect.width / 2;
+      const textYPx = availableH > 0 ? halfBoxH + (currentWm.y / 100) * availableH : rect.height / 2;
       setDragOffset({ x: mouseX - textXPx, y: mouseY - textYPx });
     }
   };
@@ -539,24 +548,25 @@ function App() {
   const handlePointerMove = (e) => {
     if (!isDraggingText || !previewImgRef.current || !draggableCanvasRef.current) return;
     const rect = previewImgRef.current.getBoundingClientRect();
-    const textRect = draggableCanvasRef.current.getBoundingClientRect();
     
     let xPx = e.clientX - rect.left - dragOffset.x;
     let yPx = e.clientY - rect.top - dragOffset.y;
     
-    const halfW = textRect.width / 2;
-    const halfH = textRect.height / 2;
+    const boxW = watermarkBoxRef.current.width;
+    const boxH = watermarkBoxRef.current.height;
+    const halfBoxW = boxW / 2;
+    const halfBoxH = boxH / 2;
     
-    xPx = Math.max(halfW, Math.min(xPx, rect.width - halfW));
-    yPx = Math.max(halfH, Math.min(yPx, rect.height - halfH));
+    xPx = Math.max(halfBoxW, Math.min(xPx, rect.width - halfBoxW));
+    yPx = Math.max(halfBoxH, Math.min(yPx, rect.height - halfBoxH));
     
-    const availableW = rect.width - (halfW * 2);
-    const availableH = rect.height - (halfH * 2);
+    const availableW = rect.width - boxW;
+    const availableH = rect.height - boxH;
 
     setCurrentWm(prev => ({
       ...prev,
-      x: availableW > 0 ? ((xPx - halfW) / availableW) * 100 : 50,
-      y: availableH > 0 ? ((yPx - halfH) / availableH) * 100 : 50
+      x: availableW > 0 ? ((xPx - halfBoxW) / availableW) * 100 : 50,
+      y: availableH > 0 ? ((yPx - halfBoxH) / availableH) * 100 : 50
     }));
   };
 
