@@ -19,6 +19,12 @@
   padding: 0;
 }
 
+html {
+  background-color: var(--bg-color);
+  /* Prevent white flash during mobile overscroll (bounce effect) */
+  overscroll-behavior: none;
+}
+
 body {
   margin: 0;
   min-height: 100vh;
@@ -28,6 +34,7 @@ body {
   font-family: var(--font-family);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overscroll-behavior: none;
 }
 
 h1, h2, h3, h4, h5, h6 {
