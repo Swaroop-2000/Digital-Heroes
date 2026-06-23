@@ -122,8 +122,6 @@ function App() {
           
           // Calculate absolute sizes (no clamping, ensure 1:1 WYSIWYG scaling)
           const fontSizePx = (wm.fontSize / 100) * canvas.height;
-          let xPx = (wm.x / 100) * canvas.width;
-          let yPx = (wm.y / 100) * canvas.height;
           
           ctx.globalAlpha = wm.opacity / 100;
           
@@ -146,15 +144,16 @@ function App() {
           const padY = fontSizePx * 0.2;
           const boxHeight = fontSizePx * 1.0;
 
-          // Clamp watermark coordinates so it never overflows the image bounds,
-          // regardless of relative global percentages
+          // Advanced clamping: Map 0-100% to the "available sliding space" 
+          // instead of absolute center coordinates.
           const halfWidth = (textWidth / 2) + padX;
           const halfHeight = (boxHeight / 2) + padY;
           
-          if (xPx - halfWidth < 0) xPx = halfWidth;
-          if (xPx + halfWidth > canvas.width) xPx = canvas.width - halfWidth;
-          if (yPx - halfHeight < 0) yPx = halfHeight;
-          if (yPx + halfHeight > canvas.height) yPx = canvas.height - halfHeight;
+          const availableW = canvas.width - (halfWidth * 2);
+          const availableH = canvas.height - (halfHeight * 2);
+          
+          const xPx = availableW > 0 ? halfWidth + (wm.x / 100) * availableW : canvas.width / 2;
+          const yPx = availableH > 0 ? halfHeight + (wm.y / 100) * availableH : canvas.height / 2;
           
           
           // Draw Background if not transparent
@@ -455,13 +454,11 @@ function App() {
       const halfW = logicalWidth / 2;
       const halfH = logicalHeight / 2;
       
-      let xPx = (currentWm.x / 100) * imgRect.width;
-      let yPx = (currentWm.y / 100) * imgRect.height;
+      const availableW = imgRect.width - (halfW * 2);
+      const availableH = imgRect.height - (halfH * 2);
       
-      if (xPx - halfW < 0) xPx = halfW;
-      if (xPx + halfW > imgRect.width) xPx = imgRect.width - halfW;
-      if (yPx - halfH < 0) yPx = halfH;
-      if (yPx + halfH > imgRect.height) yPx = imgRect.height - halfH;
+      const xPx = availableW > 0 ? halfW + (currentWm.x / 100) * availableW : imgRect.width / 2;
+      const yPx = availableH > 0 ? halfH + (currentWm.y / 100) * availableH : imgRect.height / 2;
       
       canvas.style.left = `${(xPx / imgRect.width) * 100}%`;
       canvas.style.top = `${(yPx / imgRect.height) * 100}%`;
@@ -528,8 +525,13 @@ function App() {
       const rect = previewImgRef.current.getBoundingClientRect();
       const mouseX = e.clientX - rect.left;
       const mouseY = e.clientY - rect.top;
-      const textXPx = (currentWm.x / 100) * rect.width;
-      const textYPx = (currentWm.y / 100) * rect.height;
+      const textRect = draggableCanvasRef.current.getBoundingClientRect();
+      const halfW = textRect.width / 2;
+      const halfH = textRect.height / 2;
+      const availableW = rect.width - (halfW * 2);
+      const availableH = rect.height - (halfH * 2);
+      const textXPx = availableW > 0 ? halfW + (currentWm.x / 100) * availableW : rect.width / 2;
+      const textYPx = availableH > 0 ? halfH + (currentWm.y / 100) * availableH : rect.height / 2;
       setDragOffset({ x: mouseX - textXPx, y: mouseY - textYPx });
     }
   };
@@ -547,11 +549,14 @@ function App() {
     
     xPx = Math.max(halfW, Math.min(xPx, rect.width - halfW));
     yPx = Math.max(halfH, Math.min(yPx, rect.height - halfH));
+    
+    const availableW = rect.width - (halfW * 2);
+    const availableH = rect.height - (halfH * 2);
 
     setCurrentWm(prev => ({
       ...prev,
-      x: (xPx / rect.width) * 100,
-      y: (yPx / rect.height) * 100
+      x: availableW > 0 ? ((xPx - halfW) / availableW) * 100 : 50,
+      y: availableH > 0 ? ((yPx - halfH) / availableH) * 100 : 50
     }));
   };
 
