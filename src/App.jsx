@@ -451,6 +451,22 @@ function App() {
       canvas.style.width = `${logicalWidth}px`;
       canvas.style.height = `${logicalHeight}px`;
       
+      // Enforce physical boundary clamping on the preview canvas
+      const halfW = logicalWidth / 2;
+      const halfH = logicalHeight / 2;
+      
+      let xPx = (currentWm.x / 100) * imgRect.width;
+      let yPx = (currentWm.y / 100) * imgRect.height;
+      
+      if (xPx - halfW < 0) xPx = halfW;
+      if (xPx + halfW > imgRect.width) xPx = imgRect.width - halfW;
+      if (yPx - halfH < 0) yPx = halfH;
+      if (yPx + halfH > imgRect.height) yPx = imgRect.height - halfH;
+      
+      canvas.style.left = `${(xPx / imgRect.width) * 100}%`;
+      canvas.style.top = `${(yPx / imgRect.height) * 100}%`;
+      canvas.style.visibility = 'visible';
+      
       ctx.scale(dpr, dpr);
       ctx.clearRect(0, 0, logicalWidth, logicalHeight);
       
@@ -519,14 +535,18 @@ function App() {
   };
 
   const handlePointerMove = (e) => {
-    if (!isDraggingText || !previewImgRef.current) return;
+    if (!isDraggingText || !previewImgRef.current || !draggableCanvasRef.current) return;
     const rect = previewImgRef.current.getBoundingClientRect();
+    const textRect = draggableCanvasRef.current.getBoundingClientRect();
+    
     let xPx = e.clientX - rect.left - dragOffset.x;
     let yPx = e.clientY - rect.top - dragOffset.y;
     
-    // Clamp
-    xPx = Math.max(0, Math.min(xPx, rect.width));
-    yPx = Math.max(0, Math.min(yPx, rect.height));
+    const halfW = textRect.width / 2;
+    const halfH = textRect.height / 2;
+    
+    xPx = Math.max(halfW, Math.min(xPx, rect.width - halfW));
+    yPx = Math.max(halfH, Math.min(yPx, rect.height - halfH));
 
     setCurrentWm(prev => ({
       ...prev,
@@ -838,10 +858,9 @@ function App() {
                       onPointerUp={handlePointerUp}
                       onPointerCancel={handlePointerUp}
                       style={{
-                        left: `${currentWm.x}%`,
-                        top: `${currentWm.y}%`,
                         transform: 'translate(-50%, -50%)',
-                        opacity: currentWm.opacity / 100
+                        opacity: currentWm.opacity / 100,
+                        visibility: 'hidden'
                       }}
                     />
                   )}
@@ -884,14 +903,13 @@ function App() {
                 <h2 style={{ fontSize: '1.2rem', margin: 0 }}>{compareFile.name}</h2>
                 <button className="modal-close-btn" onClick={closeCompareModal}>&times;</button>
               </div>
-              <div style={{ display: 'flex', gap: '1rem', fontSize: '0.9rem', fontWeight: 600 }}>
-                <span style={{ color: 'var(--text-muted)' }}>Original: {formatBytes(compareFile.originalSize)}</span>
-                <span>&rarr;</span>
-                <span style={{ color: 'var(--accent)' }}>Compressed: {formatBytes(compareFile.compressedSize)}</span>
-              </div>
             </div>
             
-            <div className="modal-body" style={{ padding: 0 }}>
+            <div className="modal-body" style={{ padding: 0, display: 'flex', flexDirection: 'column' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.75rem 1rem', background: 'rgba(255,255,255,0.05)', fontSize: '0.9rem', fontWeight: 600 }}>
+                <span style={{ color: 'var(--text-muted)' }}>Original ({formatBytes(compareFile.originalSize)})</span>
+                <span style={{ color: 'var(--accent)' }}>Compressed ({formatBytes(compareFile.compressedSize)})</span>
+              </div>
               <div className="compare-container">
 
                 {/* Base Image: After (Compressed) */}
