@@ -19,23 +19,26 @@
   padding: 0;
 }
 
-html {
-  /* Match the very bottom color of the background gradient (#1e1b4b) so any bounce is invisible */
-  background-color: #1e1b4b;
-  /* Prevent white flash during mobile overscroll (bounce effect) */
-  overscroll-behavior-y: none;
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+  overflow: hidden; /* Bulletproof way to stop pull-to-refresh / rubber banding */
+  background: var(--bg-gradient);
+  overscroll-behavior: none;
 }
 
-body {
-  margin: 0;
-  min-height: 100vh;
-  background: var(--bg-gradient);
-  background-attachment: fixed;
+#root {
+  height: 100%;
+  width: 100%;
+  overflow-y: auto; /* Root becomes the scroll container */
+  overscroll-behavior-y: none; /* Stops bounce within the scroll container */
   color: var(--text-main);
   font-family: var(--font-family);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  overscroll-behavior: none;
+  -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
 }
 
 h1, h2, h3, h4, h5, h6 {
