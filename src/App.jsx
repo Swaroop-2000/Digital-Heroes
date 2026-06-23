@@ -134,9 +134,8 @@ function App() {
           ctx.font = fontStr;
           
           ctx.textAlign = 'center';
-          // We don't set textBaseline here because we set it right before drawing text
+          ctx.textBaseline = 'middle'; // Must set BEFORE measureText for accurate vertical bounds
           
-          // Measure text for background and underline
           const metrics = ctx.measureText(wm.text);
           const textWidth = metrics.width;
           const textHeight = fontSizePx; // Approximate
@@ -145,16 +144,23 @@ function App() {
           const padY = fontSizePx * 0.2;
           const boxHeight = fontSizePx * 1.0;
 
-          // Advanced clamping: Map 0-100% to the "available sliding space" 
-          // instead of absolute center coordinates.
-          const halfWidth = (textWidth / 2) + padX;
-          const halfHeight = (boxHeight / 2) + padY;
+          // Ultimate Ink-Boundary Clamping:
+          // Uses actual sub-pixel ink measurements (fallback to approximations if browser unsupported)
+          const inkLeft = metrics.actualBoundingBoxLeft || (textWidth / 2);
+          const inkRight = metrics.actualBoundingBoxRight || (textWidth / 2);
+          const inkAscent = metrics.actualBoundingBoxAscent || (fontSizePx / 2);
+          const inkDescent = metrics.actualBoundingBoxDescent || (fontSizePx / 2);
           
-          const availableW = canvas.width - (halfWidth * 2);
-          const availableH = canvas.height - (halfHeight * 2);
+          const minXPx = inkLeft;
+          const maxXPx = canvas.width - inkRight;
+          const availableW = maxXPx - minXPx;
           
-          const xPx = availableW > 0 ? halfWidth + (wm.x / 100) * availableW : canvas.width / 2;
-          const yPx = availableH > 0 ? halfHeight + (wm.y / 100) * availableH : canvas.height / 2;
+          const minYPx = inkAscent;
+          const maxYPx = canvas.height - inkDescent;
+          const availableH = maxYPx - minYPx;
+          
+          const xPx = availableW > 0 ? minXPx + (wm.x / 100) * availableW : canvas.width / 2;
+          const yPx = availableH > 0 ? minYPx + (wm.y / 100) * availableH : canvas.height / 2;
           
           
           // Draw Background if not transparent
@@ -434,7 +440,9 @@ function App() {
       if (currentWm.isBold) fontStr += 'bold ';
       fontStr += `${Math.round(fontSizePx)}px ${currentWm.fontFamily}`;
       
-      ctx.font = fontStr;
+      ctx.font = fontStr;      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle'; // Must set BEFORE measureText
+      
       const metrics = ctx.measureText(currentWm.text);
       const textWidth = metrics.width;
       
@@ -451,20 +459,24 @@ function App() {
       canvas.style.width = `${logicalWidth}px`;
       canvas.style.height = `${logicalHeight}px`;
       
-      // Enforce physical boundary clamping using the EXACT background box size,
-      // NOT the oversized DOM canvas size (which contains invisible padding)
-      const boxW = textWidth + padX * 2;
-      const boxH = boxHeight + padY * 2;
-      watermarkBoxRef.current = { width: boxW, height: boxH };
+      // Ink-Boundary calculations
+      const inkLeft = metrics.actualBoundingBoxLeft || (textWidth / 2);
+      const inkRight = metrics.actualBoundingBoxRight || (textWidth / 2);
+      const inkAscent = metrics.actualBoundingBoxAscent || (fontSizePx / 2);
+      const inkDescent = metrics.actualBoundingBoxDescent || (fontSizePx / 2);
       
-      const halfBoxW = boxW / 2;
-      const halfBoxH = boxH / 2;
+      watermarkBoxRef.current = { inkLeft, inkRight, inkAscent, inkDescent };
       
-      const availableW = imgRect.width - boxW;
-      const availableH = imgRect.height - boxH;
+      const minXPx = inkLeft;
+      const maxXPx = imgRect.width - inkRight;
+      const availableW = maxXPx - minXPx;
       
-      const xPx = availableW > 0 ? halfBoxW + (currentWm.x / 100) * availableW : imgRect.width / 2;
-      const yPx = availableH > 0 ? halfBoxH + (currentWm.y / 100) * availableH : imgRect.height / 2;
+      const minYPx = inkAscent;
+      const maxYPx = imgRect.height - inkDescent;
+      const availableH = maxYPx - minYPx;
+      
+      const xPx = availableW > 0 ? minXPx + (currentWm.x / 100) * availableW : imgRect.width / 2;
+      const yPx = availableH > 0 ? minYPx + (currentWm.y / 100) * availableH : imgRect.height / 2;
       
       canvas.style.left = `${(xPx / imgRect.width) * 100}%`;
       canvas.style.top = `${(yPx / imgRect.height) * 100}%`;
@@ -531,16 +543,18 @@ function App() {
       const rect = previewImgRef.current.getBoundingClientRect();
       const mouseX = e.clientX - rect.left;
       const mouseY = e.clientY - rect.top;
-      const boxW = watermarkBoxRef.current.width;
-      const boxH = watermarkBoxRef.current.height;
-      const halfBoxW = boxW / 2;
-      const halfBoxH = boxH / 2;
+      const { inkLeft, inkRight, inkAscent, inkDescent } = watermarkBoxRef.current;
       
-      const availableW = rect.width - boxW;
-      const availableH = rect.height - boxH;
+      const minXPx = inkLeft;
+      const maxXPx = rect.width - inkRight;
+      const availableW = maxXPx - minXPx;
       
-      const textXPx = availableW > 0 ? halfBoxW + (currentWm.x / 100) * availableW : rect.width / 2;
-      const textYPx = availableH > 0 ? halfBoxH + (currentWm.y / 100) * availableH : rect.height / 2;
+      const minYPx = inkAscent;
+      const maxYPx = rect.height - inkDescent;
+      const availableH = maxYPx - minYPx;
+      
+      const textXPx = availableW > 0 ? minXPx + (currentWm.x / 100) * availableW : rect.width / 2;
+      const textYPx = availableH > 0 ? minYPx + (currentWm.y / 100) * availableH : rect.height / 2;
       setDragOffset({ x: mouseX - textXPx, y: mouseY - textYPx });
     }
   };
@@ -552,21 +566,23 @@ function App() {
     let xPx = e.clientX - rect.left - dragOffset.x;
     let yPx = e.clientY - rect.top - dragOffset.y;
     
-    const boxW = watermarkBoxRef.current.width;
-    const boxH = watermarkBoxRef.current.height;
-    const halfBoxW = boxW / 2;
-    const halfBoxH = boxH / 2;
+    const { inkLeft, inkRight, inkAscent, inkDescent } = watermarkBoxRef.current;
     
-    xPx = Math.max(halfBoxW, Math.min(xPx, rect.width - halfBoxW));
-    yPx = Math.max(halfBoxH, Math.min(yPx, rect.height - halfBoxH));
+    const minXPx = inkLeft;
+    const maxXPx = rect.width - inkRight;
+    const availableW = maxXPx - minXPx;
     
-    const availableW = rect.width - boxW;
-    const availableH = rect.height - boxH;
+    const minYPx = inkAscent;
+    const maxYPx = rect.height - inkDescent;
+    const availableH = maxYPx - minYPx;
+    
+    xPx = Math.max(minXPx, Math.min(xPx, maxXPx));
+    yPx = Math.max(minYPx, Math.min(yPx, maxYPx));
 
     setCurrentWm(prev => ({
       ...prev,
-      x: availableW > 0 ? ((xPx - halfBoxW) / availableW) * 100 : 50,
-      y: availableH > 0 ? ((yPx - halfBoxH) / availableH) * 100 : 50
+      x: availableW > 0 ? ((xPx - minXPx) / availableW) * 100 : 50,
+      y: availableH > 0 ? ((yPx - minYPx) / availableH) * 100 : 50
     }));
   };
 
