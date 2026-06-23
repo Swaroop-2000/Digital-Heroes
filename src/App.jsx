@@ -529,7 +529,7 @@ function App() {
   };
 
   return (
-    <div className="app-container">
+    <div className={`app-container ${files.length > 0 ? 'has-files' : ''}`}>
       <header className="header">
         <h1 className="header-title">WebP Master</h1>
         <p className="header-subtitle">
