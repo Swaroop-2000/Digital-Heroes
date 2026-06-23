@@ -122,8 +122,8 @@ function App() {
           
           // Calculate absolute sizes (no clamping, ensure 1:1 WYSIWYG scaling)
           const fontSizePx = (wm.fontSize / 100) * canvas.height;
-          const xPx = (wm.x / 100) * canvas.width;
-          const yPx = (wm.y / 100) * canvas.height;
+          let xPx = (wm.x / 100) * canvas.width;
+          let yPx = (wm.y / 100) * canvas.height;
           
           ctx.globalAlpha = wm.opacity / 100;
           
@@ -142,12 +142,24 @@ function App() {
           const textWidth = metrics.width;
           const textHeight = fontSizePx; // Approximate
           
+          const padX = fontSizePx * 0.2;
+          const padY = fontSizePx * 0.2;
+          const boxHeight = fontSizePx * 1.0;
+
+          // Clamp watermark coordinates so it never overflows the image bounds,
+          // regardless of relative global percentages
+          const halfWidth = (textWidth / 2) + padX;
+          const halfHeight = (boxHeight / 2) + padY;
+          
+          if (xPx - halfWidth < 0) xPx = halfWidth;
+          if (xPx + halfWidth > canvas.width) xPx = canvas.width - halfWidth;
+          if (yPx - halfHeight < 0) yPx = halfHeight;
+          if (yPx + halfHeight > canvas.height) yPx = canvas.height - halfHeight;
+          
+          
           // Draw Background if not transparent
           if (wm.backgroundColor !== 'transparent') {
             ctx.fillStyle = wm.backgroundColor;
-            const padX = fontSizePx * 0.2;
-            const padY = fontSizePx * 0.2;
-            const boxHeight = fontSizePx * 1.0;
             ctx.fillRect(
               xPx - textWidth/2 - padX, 
               yPx - boxHeight/2 - padY, 
@@ -866,18 +878,21 @@ function App() {
       {/* Compare Modal */}
       {compareModalOpen && compareFile && (
         <div className="modal-overlay">
-          <div className="modal-content">
-            <div className="modal-header">
-              <h2>Compare: Original vs Compressed</h2>
-              <button className="modal-close-btn" onClick={closeCompareModal}>
-                <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-              </button>
+          <div className="modal-content" style={{ maxWidth: '90vw', maxHeight: '90vh' }}>
+            <div className="modal-header" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '0.5rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center' }}>
+                <h2 style={{ fontSize: '1.2rem', margin: 0 }}>{compareFile.name}</h2>
+                <button className="modal-close-btn" onClick={closeCompareModal}>&times;</button>
+              </div>
+              <div style={{ display: 'flex', gap: '1rem', fontSize: '0.9rem', fontWeight: 600 }}>
+                <span style={{ color: 'var(--text-muted)' }}>Original: {formatBytes(compareFile.originalSize)}</span>
+                <span>&rarr;</span>
+                <span style={{ color: 'var(--accent)' }}>Compressed: {formatBytes(compareFile.compressedSize)}</span>
+              </div>
             </div>
             
             <div className="modal-body" style={{ padding: 0 }}>
               <div className="compare-container">
-                <div className="compare-badge badge-left">Original ({formatBytes(compareFile.originalSize)})</div>
-                <div className="compare-badge badge-right">Compressed ({formatBytes(compareFile.compressedSize)})</div>
 
                 {/* Base Image: After (Compressed) */}
                 <img 
