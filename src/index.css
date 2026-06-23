@@ -20,9 +20,10 @@
 }
 
 html {
-  background-color: var(--bg-color);
+  /* Match the very bottom color of the background gradient (#1e1b4b) so any bounce is invisible */
+  background-color: #1e1b4b;
   /* Prevent white flash during mobile overscroll (bounce effect) */
-  overscroll-behavior: none;
+  overscroll-behavior-y: none;
 }
 
 body {
