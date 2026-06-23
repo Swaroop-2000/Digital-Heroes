@@ -33,6 +33,9 @@
   display: flex;
   flex-direction: column;
   gap: 2rem;
+}
+
+.main-content.has-files {
   padding-bottom: 6rem; /* Space for the floating action bar */
 }
 
@@ -695,7 +698,7 @@
 
 /* Footer */
 .footer {
-  margin-top: 4rem;
+  margin-top: 2rem;
   padding-top: 2rem;
   border-top: 1px solid var(--card-border);
   display: flex;
