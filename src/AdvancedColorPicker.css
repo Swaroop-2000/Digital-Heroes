@@ -1,0 +1,353 @@
+.adv-color-cover {
+  position: fixed;
+  top: 0; right: 0; bottom: 0; left: 0;
+  z-index: 10000;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(4px);
+}
+
+.adv-color-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10001;
+  background: #0f172a;
+  border: 1px solid rgba(255,255,255,0.1);
+  box-shadow: 0 40px 80px rgba(0,0,0,0.9), inset 0 1px 1px rgba(255,255,255,0.15);
+  border-radius: 16px;
+  width: 95vw;
+  max-width: 600px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: advModalEnter 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  color: white;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+@keyframes advModalEnter {
+  from { opacity: 0; transform: translate(-50%, -45%) scale(0.98); }
+  to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+.adv-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.25rem;
+  background: rgba(255,255,255,0.03);
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.adv-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.adv-header .close-btn {
+  background: transparent;
+  border: none;
+  color: rgba(255,255,255,0.5);
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+
+.adv-header .close-btn:hover {
+  color: white;
+}
+
+.adv-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 1.25rem;
+  overflow-y: auto;
+}
+
+/* Desktop side-by-side layout */
+@media (min-width: 600px) {
+  .adv-body {
+    flex-direction: row;
+    overflow-y: visible;
+  }
+}
+
+.adv-left-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.swatch-section label {
+  display: block;
+  font-size: 0.85rem;
+  color: rgba(255,255,255,0.7);
+  margin-bottom: 0.5rem;
+}
+
+.basic-swatches-grid {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 4px;
+}
+
+.custom-swatches-grid {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 4px;
+}
+
+.adv-swatch {
+  aspect-ratio: 1;
+  border-radius: 4px;
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,0.5);
+  cursor: pointer;
+  position: relative;
+}
+
+.adv-swatch:hover {
+  transform: scale(1.1);
+  z-index: 2;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(255,255,255,0.3);
+}
+
+.adv-swatch.selected {
+  box-shadow: 0 0 0 2px #0f172a, 0 0 0 4px #6366f1;
+  z-index: 3;
+}
+
+.adv-swatch.custom.active-slot::after {
+  content: '';
+  position: absolute;
+  top: -2px; right: -2px; bottom: -2px; left: -2px;
+  border: 1px dashed rgba(255,255,255,0.5);
+  border-radius: 6px;
+  pointer-events: none;
+}
+
+.left-panel-actions {
+  margin-top: auto;
+}
+
+.adv-right-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.interactive-maps {
+  display: flex;
+  gap: 1rem;
+  height: 200px;
+}
+
+.hue-sat-map {
+  flex: 1;
+  border-radius: 8px;
+  position: relative;
+  cursor: crosshair;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.2);
+}
+
+.hue-sat-pointer {
+  position: absolute;
+  width: 0; height: 0;
+  pointer-events: none;
+}
+
+.crosshair-h, .crosshair-v {
+  position: absolute;
+  background: white;
+  mix-blend-mode: difference;
+}
+.crosshair-h {
+  width: 14px; height: 2px;
+  left: -7px; top: -1px;
+}
+.crosshair-v {
+  width: 2px; height: 14px;
+  left: -1px; top: -7px;
+}
+
+.lum-slider-wrapper {
+  width: 20px;
+  height: 100%;
+  position: relative;
+  padding: 0 6px; /* give room for the arrow */
+}
+
+.lum-slider {
+  width: 12px;
+  height: 100%;
+  border-radius: 6px;
+  position: relative;
+  cursor: ns-resize;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.2);
+  margin: 0 auto;
+}
+
+.lum-pointer {
+  position: absolute;
+  right: -6px; /* stick out to the right like Windows */
+  width: 0; height: 0;
+  pointer-events: none;
+}
+
+.lum-arrow {
+  position: absolute;
+  top: -5px; right: -2px;
+  border-top: 5px solid transparent;
+  border-bottom: 5px solid transparent;
+  border-right: 6px solid white;
+  filter: drop-shadow(-1px 0 1px rgba(0,0,0,0.5));
+}
+
+.adv-inputs-row {
+  display: flex;
+  gap: 1rem;
+}
+
+.color-preview-box {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.preview-label {
+  font-size: 0.75rem;
+  text-align: center;
+  color: rgba(255,255,255,0.7);
+}
+
+.preview-color {
+  flex: 1;
+  border-radius: 8px;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.2);
+  min-height: 40px;
+}
+
+.color-inputs-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem 1rem;
+}
+
+.input-group {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.input-group label {
+  font-size: 0.8rem;
+  color: rgba(255,255,255,0.7);
+}
+
+.input-group input {
+  width: 40px;
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 4px;
+  color: white;
+  padding: 0.2rem 0.4rem;
+  font-size: 0.8rem;
+  text-align: right;
+  outline: none;
+}
+.input-group input:focus {
+  border-color: #6366f1;
+}
+
+.adv-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: auto;
+}
+
+@media (min-width: 600px) {
+  .adv-actions {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+}
+
+.action-buttons-right {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.adv-btn {
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.2s;
+}
+
+.adv-btn.primary {
+  background: #6366f1;
+  color: white;
+  border-color: rgba(255,255,255,0.2);
+}
+.adv-btn.primary:hover {
+  background: #4f46e5;
+}
+
+.adv-btn.secondary {
+  background: rgba(255,255,255,0.1);
+  color: white;
+  border-color: rgba(255,255,255,0.1);
+}
+.adv-btn.secondary:hover {
+  background: rgba(255,255,255,0.15);
+}
+.adv-btn.secondary.block {
+  width: 100%;
+}
+@media (min-width: 600px) {
+  .adv-btn.secondary.block {
+    width: auto;
+  }
+}
+
+.transparent-btn {
+  width: 100%;
+  background: rgba(255,255,255,0.05);
+  border-color: rgba(255,255,255,0.1);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+.transparent-btn:hover {
+  background: rgba(255,255,255,0.1);
+}
+.transparent-btn.active {
+  background: rgba(99, 102, 241, 0.2);
+  border-color: #6366f1;
+  color: #6366f1;
+}
+
+/* Hide increment arrows in input[type=number] */
+input[type=number]::-webkit-inner-spin-button, 
+input[type=number]::-webkit-outer-spin-button { 
+  -webkit-appearance: none; 
+  margin: 0; 
+}
+input[type=number] {
+  -moz-appearance: textfield;
+}
