@@ -22,16 +22,18 @@
 html, body {
   margin: 0;
   padding: 0;
-  height: 100%;
-  width: 100%;
+  /* Use fixed positioning to completely lock the document to the physical screen */
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
   overflow: hidden; /* Bulletproof way to stop pull-to-refresh / rubber banding */
   background: var(--bg-gradient);
   overscroll-behavior: none;
 }
 
 #root {
-  height: 100%;
-  width: 100%;
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  overflow-x: hidden;
   overflow-y: auto; /* Root becomes the scroll container */
   overscroll-behavior-y: none; /* Stops bounce within the scroll container */
   color: var(--text-main);
