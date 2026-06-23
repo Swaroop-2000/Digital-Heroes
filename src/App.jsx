@@ -942,7 +942,7 @@ function App() {
 
       <footer className="footer">
         <div className="developer-info">
-          Developer: <span>R Swaroop</span> | Email: <span>rswaroop2000@gmail.com</span>
+          Developer: <span>R Swaroop</span> | Email: <a href="mailto:rswaroop2000@gmail.com" className="email-link">rswaroop2000@gmail.com</a>
         </div>
         <a href="https://digitalheroesco.com" target="_blank" rel="noopener noreferrer" className="dh-button">
           Built for Digital Heroes
